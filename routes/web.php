@@ -25,13 +25,16 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/dtr', [DtrController::class, 'index'])->name('dtr.index');
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+    Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
+    
 });
-Route::get('/dtr', [DtrController::class, 'index'])->name('dtr.index');
-Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
-Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
-Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
+
 
 require __DIR__.'/auth.php';
