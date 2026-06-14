@@ -6,6 +6,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DtrController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DTRUploadController;
+use App\Http\Controllers\PayslipController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
     Route::post('/excel-upload', [DTRUploadController::class, 'upload'])
     ->name('excel.upload');
+    Route::get('/payslip', [PayslipController::class, 'index'])->name('payslip.index');
 });
 
 
