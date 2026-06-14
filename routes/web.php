@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DtrController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DTRUploadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,7 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
-    
+    Route::post('/excel-upload', [DTRUploadController::class, 'upload'])
+    ->name('excel.upload');
 });
 
 
