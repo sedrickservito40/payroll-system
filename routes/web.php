@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CutoffController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DtrController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/cutoff', [CutoffController::class, 'index'])->name('cutoff.index');
+    Route::post('/cutoff/set', [CutoffController::class, 'set'])->name('cutoff.set');
     Route::get('/dtr', [DtrController::class, 'index'])->name('dtr.index');
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
