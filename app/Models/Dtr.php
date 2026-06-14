@@ -15,4 +15,9 @@ class Dtr extends Model
         'time_out',
         'cutoff',
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'employee_number', 'employee_number');
+    }
 }

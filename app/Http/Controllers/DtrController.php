@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use Illuminate\Http\Request;
-use App\Models\Dtr;
 
 class DtrController extends Controller
 {
     public function index()
     {
-        $dtrs = Dtr::orderBy('date', 'desc')->get();
+        $employees = Employee::with(['dtrs' => function ($query) {
+            $query->orderBy('date', 'desc');
+        }])->get();
 
-        return view('dtr.index', compact('dtrs'));
+        return view('dtr.index', compact('employees'));
     }
 }
