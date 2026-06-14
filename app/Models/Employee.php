@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Dtr;
 
 class Employee extends Model
 {
@@ -30,4 +31,9 @@ class Employee extends Model
         'employee_level',
         'employee_rate',
     ];
+
+    public function dtrs()
+    {
+        return $this->hasMany(Dtr::class, 'employee_number', 'employee_number');
+    }
 }
