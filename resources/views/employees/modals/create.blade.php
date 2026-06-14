@@ -69,6 +69,9 @@
                         <input type="number" step="0.01" name="employee_rate" placeholder="Employee Rate"
                             class="border p-2 rounded">
 
+                        <input type="hidden" name="employee_status" value="PROBY"
+                            class="border p-2 rounded">
+
                     </div>
 
                     <div class="flex justify-end gap-2 mt-4">
