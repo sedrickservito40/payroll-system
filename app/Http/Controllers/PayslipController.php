@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class PayslipController extends Controller
 {
-    public function index(Request $request)
+  public function index(Request $request)
     {
         $employees = collect();
 
@@ -21,30 +21,84 @@ class PayslipController extends Controller
 
         if ($request->filled('employee_number')) {
 
-            $employees = Employee::where('employee_number', $request->employee_number)->get();
+            $employees = Employee::whereIn('employee_status', ['REG', 'PROBY'])
+                ->where('employee_number', $request->employee_number)
+                ->get();
 
             foreach ($employees as $emp) {
 
+                // =========================
+                // RATE COMPUTATION
+                // =========================
                 $emp->rate_per_day = ($emp->employee_rate * 12) / 314;
-                $emp->basic_pay = ($emp->employee_rate / 2);
+                $emp->rate_per_hour = $emp->rate_per_day / 8;
+                $emp->basic_pay = $emp->employee_rate / 2;
 
-                //contributions
-                $emp->pagibig = 100;
-
-                $emp->abs_late_ut = $this->computeAbsLateUt(
+                // =========================
+                // REGULAR OT
+                // =========================
+                $emp->regular_ot = $this->computeRegularOT(
                     $emp->employee_number,
                     $cutoffStart,
                     $cutoffEnd
                 );
 
-                // 💰 convert hours to money deduction
-                $emp->abs_late_ut_ded = $emp->abs_late_ut * $emp->rate_per_day;
+                $emp->regular_ot_pay =
+                    $emp->regular_ot * $emp->rate_per_hour * 1.25;
 
-                $emp->gross_pay = $emp->basic_pay - $emp->abs_late_ut_ded;
+                // =========================
+                // CONTRIBUTIONS
+                // =========================
+                $emp->pagibig = 100;
+                $emp->philhealth = 150;
+                $emp->sss_employee = 0;
+                $emp->sss_employer = 0;
+                $emp->wth_tax = 0;
 
-                $emp->deductions = $emp->pagibig;
+                // =========================
+                // ATTENDANCE
+                // =========================
+                $attendance = $this->computeAbsLateUt(
+                    $emp->employee_number,
+                    $cutoffStart,
+                    $cutoffEnd
+                );
 
-                $emp->net_pay = $emp->gross_pay - $emp->deductions;
+                $emp->absent_days = $attendance['absent'];
+                $emp->late = $attendance['late'];
+                $emp->ut = $attendance['undertime'];
+
+                // =========================
+                // COMBINED VALUE
+                // =========================
+                $emp->abs_late_ut =
+                    $emp->absent_days +
+                    $emp->late +
+                    $emp->ut;
+
+                // =========================
+                // DEDUCTIONS (CLEAN RULE)
+                // =========================
+                $emp->abs_late_ut_ded =
+                    ($emp->absent_days * $emp->rate_per_day) +
+                    (($emp->late + $emp->ut) * $emp->rate_per_hour);
+
+                // =========================
+                // PAY COMPUTATION
+                // =========================
+                $emp->gross_pay =
+                    $emp->basic_pay +
+                    $emp->regular_ot_pay -
+                    $emp->abs_late_ut_ded;
+
+                $emp->total_deductions =
+                    $emp->pagibig +
+                    $emp->philhealth +
+                    $emp->sss_employee +
+                    $emp->wth_tax;
+
+                $emp->net_pay =
+                    $emp->gross_pay - $emp->total_deductions;
             }
         }
 
@@ -63,14 +117,15 @@ class PayslipController extends Controller
             $start = Carbon::parse($start);
             $end = Carbon::parse($end);
 
-            $total = 0;
-
             $expectedIn = Carbon::createFromTime(8, 0, 0);
             $expectedOut = Carbon::createFromTime(17, 0, 0);
 
+            $absentDays = 0;
+            $lateHours = 0;
+            $undertimeHours = 0;
+
             foreach ($start->copy()->daysUntil($end) as $day) {
 
-                // 🚫 SKIP WEEKENDS (Saturday + Sunday)
                 if ($day->isWeekend()) {
                     continue;
                 }
@@ -79,30 +134,65 @@ class PayslipController extends Controller
                     ->whereDate('date', $day)
                     ->first();
 
-                // ABSENT (only weekdays)
-                if (!$dtr) {
-                    $total += 1;
+                // ======================
+                // ABSENT
+                // ======================
+                if (!$dtr || !$dtr->time_in || !$dtr->time_out) {
+                    $absentDays += 1;
                     continue;
                 }
 
                 $timeIn = Carbon::parse($dtr->time_in);
                 $timeOut = Carbon::parse($dtr->time_out);
 
-                /*
-                // LATE
-                if ($timeIn->gt($expectedIn)) {
-                    $total += $timeIn->diffInMinutes($expectedIn) / 60;
+                // ======================
+                // LATE (15-minute grace period cutoff)
+                // ======================
+                $graceLimit = $expectedIn->copy()->addMinutes(15); // 08:15
+
+                if ($timeIn->gt($graceLimit)) {
+                    $lateHours += $timeIn->diffInMinutes($expectedIn) / 60;
                 }
 
+                // ======================
                 // UNDERTIME
+                // ======================
                 if ($timeOut->lt($expectedOut)) {
-                    $total += $expectedOut->diffInMinutes($timeOut) / 60;
+                    $undertimeHours += $expectedOut->diffInMinutes($timeOut) / 60;
                 }
-                */
             }
 
-            return $total;
+            return [
+                'absent' => $absentDays,
+                'late' => round($lateHours, 2),
+                'undertime' => round($undertimeHours, 2),
+            ];
         }
+    
+        private function computeRegularOT($employeeNumber, $start, $end)
+            {
+                $start = Carbon::parse($start);
+                $end = Carbon::parse($end);
+
+                $totalOTHours = 0;
+
+                $dtrs = Dtr::where('employee_number', $employeeNumber)
+                    ->whereBetween('date', [$start, $end])
+                    ->where('ot_type', 'REG')
+                    ->get();
+
+                foreach ($dtrs as $dtr) {
+
+                    if (!$dtr->overtime) {
+                        continue;
+                    }
+
+                    // assuming overtime is stored in HOURS already
+                    $totalOTHours += (float) $dtr->overtime;
+                }
+
+                return $totalOTHours;
+            }
 
     private function getCutoffEnd($start)
     {

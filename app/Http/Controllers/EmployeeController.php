@@ -40,6 +40,7 @@ class EmployeeController extends Controller
                 'pagibig_number',
                 'employee_level',
                 'employee_rate',
+                'employee_status',
             ]);
 
         // IMAGE handling (blob version)

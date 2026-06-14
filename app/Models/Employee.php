@@ -30,6 +30,7 @@ class Employee extends Model
         'emp_img',
         'employee_level',
         'employee_rate',
+        'employee_status',
     ];
 
     public function dtrs()

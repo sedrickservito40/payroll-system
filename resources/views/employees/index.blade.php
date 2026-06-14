@@ -93,7 +93,8 @@
                                                 'tin_number' => $emp->tin_number,
                                                 'pagibig_number' => $emp->pagibig_number,
                                                 'employee_level' => $emp->employee_level,
-                                                'employee_rate' => $emp->employee_rate
+                                                'employee_rate' => $emp->employee_rate,
+                                                'employee_status' => $emp->employee_status,
                                             ])"
                                             class="text-green-600"
                                         >

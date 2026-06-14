@@ -72,6 +72,19 @@
                         x-model="editEmp.employee_rate"
                         class="border p-2 rounded">
 
+                    <select
+                        name="employee_status"
+                        x-model="editEmp.employee_status"
+                        class="border p-2 rounded"
+                    >
+                        <option value="">Select Status</option>
+                        <option value="REG">Regular</option>
+                        <option value="PROBY">Probationary</option>
+                        <option value="CON">Contractual</option>
+                        <option value="RES">Resigned</option>
+                        <option value="TER">Terminated</option>
+                    </select>
+
                 </div>
 
                 <div class="flex justify-end gap-2 mt-4">
