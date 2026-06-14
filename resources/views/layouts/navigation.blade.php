@@ -83,7 +83,7 @@
                             @click.away="openReports=false"
                             class="absolute mt-2 w-48 bg-white border rounded-md shadow-lg z-50">
 
-                            <a href="#"
+                            <a href="{{ route('payslip.index') }}"
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Payslip
                             </a>
