@@ -3,21 +3,8 @@
 
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            {{-- CUT-OFF DISPLAY --}}
-            @if($start && $end)
-                <div class="mb-4 p-3 bg-blue-100 text-blue-700 rounded">
-                    Cutoff Range:
-                    <strong>{{ $start->toDateString() }} - {{ $end->toDateString() }}</strong>
-                </div>
-            @elseif(session('cutoff_start'))
-                <div class="mb-4 p-3 bg-blue-100 text-blue-700 rounded">
-                    Active Cutoff:
-                    <strong>{{ session('cutoff_start') }}</strong>
-                </div>
-            @endif
-
             {{-- Upload Button --}}
-            <div class="mb-4">
+            <div class="mb-2">
                 <button
                     type="button"
                     @click="open = true"
@@ -30,10 +17,10 @@
             <hr class="my-4">
 
             {{-- MAIN GRID --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
 
                 {{-- LEFT: EMPLOYEES --}}
-                <div class="bg-white p-4 shadow rounded">
+                <div class="md:col-span-3 bg-white p-4 shadow rounded">
                     <h2 class="text-lg font-semibold mb-3">Employees</h2>
 
                     <ul class="space-y-2">
@@ -54,8 +41,24 @@
                 </div>
 
                 {{-- RIGHT: DTR RECORDS --}}
-                <div class="bg-white p-4 shadow rounded">
-                    <h2 class="text-lg font-semibold mb-3">DTR Records</h2>
+                <div class="md:col-span-9 bg-white p-4 shadow rounded">
+                    <div class="flex justify-between items-center mb-3">
+
+                    <h2 class="text-lg font-semibold">DTR Records</h2>
+
+                    @if($start && $end)
+                        <div class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded">
+                            Cutoff:
+                            <strong>{{ $start->toDateString() }} - {{ $end->toDateString() }}</strong>
+                        </div>
+                    @elseif(session('cutoff_start'))
+                        <div class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded">
+                            Active:
+                            <strong>{{ session('cutoff_start') }}</strong>
+                        </div>
+                    @endif
+
+                </div>
 
                     <template x-if="!selected">
                         <p class="text-gray-500">Select an employee to view DTR</p>
@@ -96,7 +99,7 @@
 
                             </div>
 
-                            {{-- DTR TABLE WITH ABSENT LOGIC --}}
+                           {{-- DTR TABLE WITH ABSENT LOGIC --}}
                             @php
                                 $dates = collect();
 
@@ -112,40 +115,91 @@
                             @endphp
 
                             @if($dates->count())
-                                <table class="w-full border text-sm">
-                                    <thead>
-                                        <tr class="bg-gray-100">
-                                            <th>Date</th>
-                                            <th>In</th>
-                                            <th>Out</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
+                                <form method="POST" action="{{ route('dtr.update') }}">
+                                    @csrf
+                                    <div class="mt-3 text-right">
+                                        <button type="submit"
+                                            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                            Apply Changes
+                                        </button>
+                                    </div>
 
-                                  <tbody>
-                                    @foreach($dates as $date)
-                                        @php
-                                            $dtr = $dtrsByDate[$date] ?? null;
-                                            $isRestDay = \Carbon\Carbon::parse($date)->isWeekend(); // Saturday + Sunday
-                                        @endphp
+                                    <table class="w-full border text-sm text-center">
+                                        <thead>
+                                            <tr class="bg-gray-100">
+                                                <th>Date</th>
+                                                <th>In</th>
+                                                <th>Out</th>
+                                                <th>Raw OT</th>
+                                                <th class="w-48">OT Type</th>
+                                                <th class="w-24">Overtime</th>
+                                            </tr>
+                                        </thead>
 
-                                        <tr>
-                                            <td>{{ $date }}</td>
-                                            <td>{{ $dtr->time_in ?? '-' }}</td>
-                                            <td>{{ $dtr->time_out ?? '-' }}</td>
-                                            <td>
-                                                @if($isRestDay)
-                                                    <span class="text-blue-600 font-bold">Restday</span>
-                                                @elseif($dtr)
-                                                    <span class="text-green-600">Present</span>
-                                                @else
-                                                    <span class="text-red-600 font-bold">Absent</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                                </table>
+                                    <tbody>
+@foreach($dates as $date)
+    @php
+        $dtr = $dtrsByDate[$date] ?? null;
+        $isRestDay = \Carbon\Carbon::parse($date)->isWeekend();
+    @endphp
+
+    <tr>
+
+    <input type="hidden" name="employee_number" value="{{ $employee->employee_number }}">
+        <td>{{ $date }}</td>
+
+        {{-- TIME IN --}}
+        <td>
+            <input type="time"
+                name="rows[{{ $dtr->id ?? 'new_'.$date }}][time_in]"
+                class="border p-1 rounded w-full"
+                value="{{ $dtr->time_in ?? '' }}">
+        </td>
+
+        {{-- TIME OUT --}}
+        <td>
+            <input type="time"
+                name="rows[{{ $dtr->id ?? 'new_'.$date }}][time_out]"
+                class="border p-1 rounded w-full"
+                value="{{ $dtr->time_out ?? '' }}">
+        </td>
+
+        {{-- RAW OT --}}
+        <td>
+            {{ $dtr->raw_ot ?? '-' }}
+            <input type="hidden"
+                name="rows[{{ $dtr->id ?? 'new_'.$date }}][raw_ot]"
+                value="{{ $dtr->raw_ot ?? 0 }}">
+        </td>
+
+        {{-- OVERTIME --}}
+        <td>
+            <input type="number"
+                step="0.01"
+                name="rows[{{ $dtr->id ?? 'new_'.$date }}][overtime]"
+                class="border p-1 rounded w-full"
+                value="{{ $dtr->overtime ?? '' }}">
+        </td>
+
+        {{-- OT TYPE --}}
+        <td class="w-48">
+            <select name="rows[{{ $dtr->id ?? 'new_'.$date }}][ot_type]"
+                class="border p-1 rounded w-full">
+
+                <option value="">Select</option>
+
+                <option value="REG" {{ ($dtr->ot_type ?? '') == 'REG' ? 'selected' : '' }}>Regular</option>
+                <option value="RESTDAY" {{ ($dtr->ot_type ?? '') == 'RESTDAY' ? 'selected' : '' }}>Restday</option>
+                <option value="HOLIDAY" {{ ($dtr->ot_type ?? '') == 'HOLIDAY' ? 'selected' : '' }}>Holiday</option>
+                <option value="SPECIAL" {{ ($dtr->ot_type ?? '') == 'SPECIAL' ? 'selected' : '' }}>Special</option>
+            </select>
+        </td>
+
+    </tr>
+@endforeach
+</tbody>
+                                    </table>
+                                </form>
                             @else
                                 <p class="text-sm text-gray-500">No cutoff selected</p>
                             @endif
@@ -160,5 +214,43 @@
 
         @include('dtr.modals.uploadDtr')
 
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const overtimeInputs = document.querySelectorAll('input[name="overtime[]"]');
+
+            overtimeInputs.forEach((input, index) => {
+
+                // store last valid value
+                let lastValid = input.value;
+
+                input.addEventListener("input", function () {
+
+                    const rawOtInputs = document.querySelectorAll('input[name="raw_ot[]"]');
+
+                    let raw = parseFloat(rawOtInputs[index].value || 0);
+                    let val = parseFloat(this.value || 0);
+
+                    if (val > raw) {
+
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Invalid Overtime',
+                            text: `Overtime cannot exceed Raw OT (${raw})`,
+                            confirmButtonColor: '#3085d6',
+                        });
+
+                        // revert to last valid value (NOT raw_ot)
+                        this.value = lastValid;
+
+                        return;
+                    }
+
+                    // update last valid value
+                    lastValid = this.value;
+                });
+            });
+        });
+        </script>
     </div>
 </x-app-layout>

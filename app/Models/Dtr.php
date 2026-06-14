@@ -14,6 +14,8 @@ class Dtr extends Model
         'time_in',
         'time_out',
         'cutoff',
+        'overtime',
+        'ot_type',
     ];
 
     public function employee()

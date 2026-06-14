@@ -29,7 +29,7 @@
                     <col class="w-[10%]">
                     <col class="w-[10%]">
                     <col class="w-[10%]">
-                    <col class="w-[20%]">
+                    <col class="w-[10%]">
                 </colgroup>
 
                 <tbody>
@@ -39,8 +39,9 @@
                 <!-- ABS LATE UT SUMMARY ROW -->
                     <tr class="bg-yellow-50 font-semibold">
                         <td colspan="9" class="px-4 py-3 text-red-600">
-                            ABS/LATE/UT:
-                            {{($emp->abs_late_ut) }}
+                            Absent = {{ $emp->absent_days }} |
+                            Late = {{ $emp->late }} |
+                            UT = {{ $emp->ut }}
                         </td>
                     </tr>
                     <!-- Header -->
@@ -81,20 +82,20 @@
                     <!-- Column labels -->
                     <tr class="bg-gray-50 text-sm font-semibold">
                         <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2">Hours</td>
-                        <td class="px-3 py-2 border-r border-gray-300">Amount</td>
+                        <td class="px-3 py-2 text-center">Hours</td>
+                        <td class="px-3 py-2 border-r border-gray-300 text-center">Amount</td>
                        <td class="px-3 py-2">
                             Contribution
                         </td>
 
-                        <td class="px-3 py-2 border-gray-300">
+                        <td class="px-3 py-2 border-gray-300 text-center">
                             Amount
                         </td>
 
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2">Co. Deduction</td>
-                        <td class="px-3 py-2">Amount</td>
-                        <td class="px-3 py-2">Balance</td>
+                        <td class="px-3 py-2 text-center">Amount</td>
+                        <td class="px-3 py-2 text-center">Balance</td>
                     </tr>
 
                     <tr>
@@ -102,48 +103,60 @@
                             Basic Pay:
                         </td>
                         <td></td>
-                        <td class="px-3 py-2 border-r border-gray-300">
-                            {{ number_format($emp->basic_pay, 2) }}
+                        <td class="px-3 py-2 border-r border-gray-300 text-end">
+                            {{ $emp->basic_pay == 0 ? '-' : number_format($emp->basic_pay, 2) }}
                         </td>
                         <td class="px-3 py-2">SSS: </td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->sss_employee == 0 ? '-' : number_format($emp->sss_employee, 2) }}
+                        </td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2">Cash Advance</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-center"></td>
+                        <td class="px-3 py-2 text-center"></td>
                     </tr>
                     <tr>
                         <td class="px-3 py-2">Reg OT</td>
-                        <td></td>
-                        <td class="px-3 py-2 border-r border-gray-300"></td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->regular_ot == 0 ? '-' : number_format($emp->regular_ot, 2) }}
+                        </td>
+                        <td class="px-3 py-2 border-r border-gray-300 text-end">
+                            {{ $emp->regular_ot_pay == 0 ? '-' : number_format($emp->regular_ot_pay, 2) }}
+                        </td>
                         <td class="px-3 py-2">Pagibig</td>
-                        <td class="px-3 py-2">{{ number_format($emp->pagibig, 2) }}</td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->pagibig == 0 ? '-' : number_format($emp->pagibig, 2) }}
+                        </td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2">Donation</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-center"></td>
+                        <td class="px-3 py-2 text-center"></td>
                     </tr>
                     <tr>
                         <td class="px-3 py-2">Sun OT</td>
                         <td></td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2">PhilHealth</td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->philhealth == 0 ? '-' : number_format($emp->philhealth, 2) }}
+                        </td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2">Others</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-center"></td>
+                        <td class="px-3 py-2 text-center"></td>
                     </tr>
                     <tr>
                         <td class="px-3 py-2">RD OT</td>
                         <td></td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2">Withholding Tax</td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->wth_tax == 0 ? '-' : number_format($emp->wth_tax, 2) }}
+                        </td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-center"></td>
+                        <td class="px-3 py-2 text-center"></td>
                     </tr>
                     <tr>
                         <td class="px-3 py-2">Spl Hol OT</td>
@@ -153,8 +166,8 @@
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-center"></td>
+                        <td class="px-3 py-2 text-center"></td>
                     </tr>
                     <tr>
                         <td class="px-3 py-2">Leg Hol OT</td>
@@ -171,9 +184,9 @@
 
                         <td class="px-3 py-2 border-b border-gray-300"></td>
 
-                        <td class="px-3 py-2 border-b border-gray-300"></td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-center"></td>
 
-                        <td class="px-3 py-2 border-b border-gray-300"></td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-center"></td>
                     </tr>
 
                      <tr>
@@ -185,15 +198,15 @@
 
                         <td class="px-3 py-2 border-b border-gray-300">Gov. Loans</td>
 
-                        <td class="px-3 py-2 border-b border-gray-300">Amount</td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-center">Amount</td>
 
-                        <td class="px-3 py-2 border-r border-gray-300 border-b border-gray-300">Balance</td>
+                        <td class="px-3 py-2 border-r border-gray-300 border-b border-gray-300 text-center" >Balance</td>
 
                         <td class="px-3 py-2 border-b border-gray-300">Other loans</td>
 
-                        <td class="px-3 py-2 border-b border-gray-300">Amount</td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-center">Amount</td>
 
-                        <td class="px-3 py-2 border-b border-gray-300">Balance</td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-center">Balance</td>
                     </tr>
                     <tr>
                         <td class="px-3 py-2">SL/VL</td>
@@ -203,21 +216,21 @@
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2">Loan</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-end"></td>
+                        <td class="px-3 py-2 text-end"></td>
                     </tr>
                     <tr>
                         <td class="px-3 py-2">Abs/Late/UT</td>
                         <td></td>
-                        <td class="px-3 py-2 border-r border-gray-300">
+                        <td class="px-3 py-2 border-r border-gray-300 text-end">
                             {{ $emp->abs_late_ut_ded == 0 ? '-' : number_format($emp->abs_late_ut_ded, 2) }}
                         </td>
                         <td class="px-3 py-2">Multi-purpose</td>
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2">Rice</td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-center"></td>
+                        <td class="px-3 py-2 text-center"></td>
                     </tr>
 
                      <tr>
@@ -235,9 +248,9 @@
 
                         <td class="px-3 py-2 border-b border-gray-300">Others</td>
 
-                        <td class="px-3 py-2 border-b border-gray-300"></td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-center"></td>
 
-                        <td class="px-3 py-2 border-b border-gray-300"></td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-center"></td>
                     </tr>
 
                     <tr>
@@ -245,21 +258,21 @@
 
                         <td class="px-3 py-2 border-b border-gray-300"></td>
 
-                        <td class="px-3 py-2 border-r border-gray-300 border-b border-gray-300">{{ number_format($emp->gross_pay, 2) }}</td>
+                        <td class="px-3 py-2 border-r border-gray-300 border-b border-gray-300 text-end">{{ number_format($emp->gross_pay, 2) }}</td>
 
                         <td class="px-3 py-2 border-b border-gray-300">Deductions</td>
 
                         <td class="px-3 py-2 border-b border-gray-300"></td>
 
-                        <td class="px-3 py-2 border-r border-gray-300 border-b border-gray-300">
-                            {{ $emp->deductions == 0 ? '-' : number_format($emp->deductions, 2) }}
+                        <td class="px-3 py-2 border-r border-gray-300 border-b border-gray-300 text-end">
+                            {{ $emp->total_deductions == 0 ? '-' : number_format($emp->total_deductions, 2) }}
                         </td>
 
                         <td class="px-3 py-2 border-b border-gray-300">Netpay</td>
 
-                        <td class="px-3 py-2 border-b border-gray-300"></td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-center"></td>
 
-                        <td class="px-3 py-2 border-b border-gray-300">{{ number_format($emp->net_pay, 2) }}</td>
+                        <td class="px-3 py-2 border-b border-gray-300 text-end">{{ number_format($emp->net_pay, 2) }}</td>
                     </tr>
                 @empty
                     <tr>

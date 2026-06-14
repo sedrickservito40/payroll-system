@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/cutoff', [CutoffController::class, 'index'])->name('cutoff.index');
     Route::post('/cutoff/set', [CutoffController::class, 'set'])->name('cutoff.set');
     Route::get('/dtr', [DtrController::class, 'index'])->name('dtr.index');
+    Route::post('/dtr/update', [DtrController::class, 'update'])->name('dtr.update');
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
