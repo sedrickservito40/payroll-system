@@ -13,6 +13,7 @@
             {{-- Upload Button --}}
    
             <button
+                title="Upload DTR"
                 type="button"
                 @click="open = true"
                 class="fixed right-6 top-1/2 -translate-y-1/2 bg-green-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-green-700"
