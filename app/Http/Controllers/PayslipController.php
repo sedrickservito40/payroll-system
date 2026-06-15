@@ -9,6 +9,24 @@ use Carbon\Carbon;
 
 class PayslipController extends Controller
 {
+
+
+    public function suggestions(Request $request)
+        {
+            $query = $request->get('q');
+
+            if (!$query) {
+                return response()->json([]);
+            }
+
+            $results = Employee::where('employee_number', 'like', "%{$query}%")
+                    ->orWhere('first_name', 'like', "%{$query}%")
+                    ->orWhere('last_name', 'like', "%{$query}%")
+                    ->limit(5)
+                    ->get(['employee_number', 'first_name', 'last_name']);
+
+            return response()->json($results);
+        }
   public function index(Request $request)
     {
         $employees = collect();

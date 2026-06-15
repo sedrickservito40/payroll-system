@@ -41,6 +41,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
     Route::post('/excel-upload', [DTRUploadController::class, 'upload'])
     ->name('excel.upload');
+    Route::get('/employee-suggestions', [PayslipController::class, 'suggestions'])
+    ->name('employees.suggestions');
     Route::get('/payslip', [PayslipController::class, 'index'])->name('payslip.index');
 });
 

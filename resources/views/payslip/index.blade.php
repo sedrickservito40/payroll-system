@@ -4,12 +4,20 @@
     <div class="max-w-7xl mx-auto px-6 lg:px-8 w-full">
 
         <!-- Search -->
-        <form method="GET" class="mb-6 flex gap-2">
-            <input type="text"
-                   name="employee_number"
-                   value="{{ request('employee_number') }}"
-                   placeholder="Employee Number"
-                   class="w-80 border-gray-300 rounded-lg">
+        <form method="GET" class="mb-6 flex gap-2 relative">
+            <div class="relative">
+                <input type="text"
+                    id="employee_number"
+                    name="employee_number"
+                    value="{{ request('employee_number') }}"
+                    placeholder="Employee Number"
+                    autocomplete="off"
+                    class="w-80 border-gray-300 rounded-lg">
+
+                <!-- Suggestions box -->
+                <ul id="suggestions"
+                    class="absolute z-50 bg-white border w-80 mt-1 rounded-lg shadow hidden"></ul>
+            </div>
 
             <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">
                 Search
@@ -174,9 +182,8 @@
                         <td class="px-3 py-2 border-r border-gray-300 text-end">
                             {{ $emp->spl_hol_ot_pay == 0 ? '-' : number_format($emp->spl_hol_ot_pay, 2) }}
                         </td>
-                        <td class="px-3 py-2">Withholding Tax</td>
+                        <td class="px-3 py-2"></td>
                         <td class="px-3 py-2 text-end">
-                            {{ $emp->wth_tax == 0 ? '-' : number_format($emp->wth_tax, 2) }}
                         </td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2"></td>
@@ -310,5 +317,117 @@
         </div>
     </div>
 </div>
+
+<script>
+const input = document.getElementById('employee_number');
+const box = document.getElementById('suggestions');
+
+let items = [];
+let selectedIndex = -1;
+
+// FETCH + RENDER
+input.addEventListener('input', function () {
+    const query = this.value;
+
+    selectedIndex = -1;
+    items = [];
+
+    if (query.length < 2) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+    }
+
+    fetch(`/employee-suggestions?q=${query}`)
+        .then(res => res.json())
+        .then(data => {
+            box.innerHTML = '';
+            items = data;
+
+            if (data.length === 0) {
+                box.classList.add('hidden');
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const li = document.createElement('li');
+
+                const fullName = `${item.last_name.toUpperCase()}, ${item.first_name.toUpperCase()}`;
+                const empNo = item.employee_number;
+
+                li.textContent = `${empNo} - ${fullName}`;
+                li.className = "px-3 py-2 hover:bg-gray-100 cursor-pointer";
+
+                // CLICK
+                li.addEventListener('click', () => selectItem(index));
+
+                box.appendChild(li);
+            });
+
+            box.classList.remove('hidden');
+        });
+});
+
+
+// KEYBOARD NAVIGATION
+input.addEventListener('keydown', function (e) {
+    const list = box.querySelectorAll('li');
+
+    if (box.classList.contains('hidden') || list.length === 0) return;
+
+    // DOWN
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex + 1) % list.length;
+        updateActive(list);
+    }
+
+    // UP
+    else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = (selectedIndex - 1 + list.length) % list.length;
+        updateActive(list);
+    }
+
+    // ENTER
+    else if (e.key === 'Enter') {
+        if (selectedIndex >= 0) {
+            e.preventDefault();
+            selectItem(selectedIndex);
+        }
+    }
+});
+
+
+// SELECT ITEM (CLICK OR ENTER)
+function selectItem(index) {
+    const item = items[index];
+    if (!item) return;
+
+    input.value = item.employee_number;
+    box.classList.add('hidden');
+    box.innerHTML = '';
+}
+
+
+// HIGHLIGHT ACTIVE ITEM
+function updateActive(list) {
+    list.forEach((li, i) => {
+        if (i === selectedIndex) {
+            li.classList.add('bg-gray-200');
+        } else {
+            li.classList.remove('bg-gray-200');
+        }
+    });
+}
+
+
+// CLOSE WHEN CLICKING OUTSIDE
+document.addEventListener('click', function (e) {
+    if (!input.contains(e.target) && !box.contains(e.target)) {
+        box.classList.add('hidden');
+    }
+});
+</script>
 
 </x-app-layout>
