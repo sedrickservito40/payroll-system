@@ -34,17 +34,79 @@ class PayslipController extends Controller
                 $emp->rate_per_hour = $emp->rate_per_day / 8;
                 $emp->basic_pay = $emp->employee_rate / 2;
 
+                // OT initially set to 0 to avoid undefined property issues in the view
+                $emp->regular_ot = 0;
+                $emp->regular_ot_pay = 0;
+                $emp->sun_ot = 0;
+                $emp->sun_ot_pay = 0;
+                $emp->rd_ot = 0;
+                $emp->rd_ot_pay = 0;
+                $emp->spl_hol_ot = 0;
+                $emp->spl_hol_ot_pay = 0;
+                $emp->leg_hol_ot = 0;
+                $emp->leg_hol_ot_pay = 0;
+                // OT initially set to 0 to avoid undefined property issues in the view
+            
+
                 // =========================
                 // REGULAR OT
                 // =========================
-                $emp->regular_ot = $this->computeRegularOT(
+                $emp->regular_ot = $this->computeOT(
                     $emp->employee_number,
                     $cutoffStart,
-                    $cutoffEnd
+                    $cutoffEnd,
+                    ['REG OT']
                 );
 
                 $emp->regular_ot_pay =
                     $emp->regular_ot * $emp->rate_per_hour * 1.25;
+
+                // =========================
+                // SUN OT
+                // =========================
+                $emp->sun_ot = $this->computeOT(
+                    $emp->employee_number,
+                    $cutoffStart,
+                    $cutoffEnd,
+                    ['SUN OT']
+                );
+
+                $emp->sun_ot_pay =
+                    $emp->sun_ot * $emp->rate_per_hour * 1.69;
+
+
+                // ========================= Rest day OT ========================= //
+                $emp->rd_ot = $this->computeOT(
+                    $emp->employee_number,
+                    $cutoffStart,
+                    $cutoffEnd,
+                    ['RD OT']
+                );
+
+                $emp->rd_ot_pay =
+                    $emp->rd_ot * $emp->rate_per_hour * 1.69;
+
+                // ========================= Special Holiday OT ========================= //
+                $emp->spl_hol_ot = $this->computeOT(
+                    $emp->employee_number,
+                    $cutoffStart,
+                    $cutoffEnd,
+                    ['SPL HOL OT']
+                );
+
+                $emp->spl_hol_ot_pay =
+                    $emp->spl_hol_ot * $emp->rate_per_hour * 1.69;
+
+                // ========================= Legal Holiday OT ========================= //
+                $emp->leg_hol_ot = $this->computeOT(
+                    $emp->employee_number,
+                    $cutoffStart,
+                    $cutoffEnd,
+                    ['LEG HOL OT']
+                );
+
+                $emp->leg_hol_ot_pay =
+                    $emp->leg_hol_ot * $emp->rate_per_hour * 2.0;
 
                 // =========================
                 // CONTRIBUTIONS
@@ -86,9 +148,14 @@ class PayslipController extends Controller
                 // =========================
                 // PAY COMPUTATION
                 // =========================
+
+                // ALL OT TYPES
+                $emp->total_ot_pay = $emp->regular_ot_pay + $emp->sun_ot_pay
+                                    + $emp->rd_ot_pay + $emp->spl_hol_ot_pay + $emp->leg_hol_ot_pay;
+
                 $emp->gross_pay =
                     $emp->basic_pay +
-                    $emp->regular_ot_pay -
+                    $emp->total_ot_pay -
                     $emp->abs_late_ut_ded;
 
                 $emp->total_deductions =
@@ -169,7 +236,7 @@ class PayslipController extends Controller
             ];
         }
     
-        private function computeRegularOT($employeeNumber, $start, $end)
+        private function computeOT($employeeNumber, $start, $end, array $types)
             {
                 $start = Carbon::parse($start);
                 $end = Carbon::parse($end);
@@ -178,16 +245,14 @@ class PayslipController extends Controller
 
                 $dtrs = Dtr::where('employee_number', $employeeNumber)
                     ->whereBetween('date', [$start, $end])
-                    ->where('ot_type', 'REG')
+                    ->whereIn('ot_type', $types)
                     ->get();
 
                 foreach ($dtrs as $dtr) {
-
                     if (!$dtr->overtime) {
                         continue;
                     }
 
-                    // assuming overtime is stored in HOURS already
                     $totalOTHours += (float) $dtr->overtime;
                 }
 

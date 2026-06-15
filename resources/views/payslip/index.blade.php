@@ -134,8 +134,12 @@
                     </tr>
                     <tr>
                         <td class="px-3 py-2">Sun OT</td>
-                        <td></td>
-                        <td class="px-3 py-2 border-r border-gray-300"></td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->sun_ot == 0 ? '-' : number_format($emp->sun_ot, 2) }}
+                        </td>
+                        <td class="px-3 py-2 border-r border-gray-300 text-end">
+                            {{ $emp->sun_ot_pay == 0 ? '-' : number_format($emp->sun_ot_pay, 2) }}
+                        </td>
                         <td class="px-3 py-2">PhilHealth</td>
                         <td class="px-3 py-2 text-end">
                             {{ $emp->philhealth == 0 ? '-' : number_format($emp->philhealth, 2) }}
@@ -147,8 +151,12 @@
                     </tr>
                     <tr>
                         <td class="px-3 py-2">RD OT</td>
-                        <td></td>
-                        <td class="px-3 py-2 border-r border-gray-300"></td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->rd_ot == 0 ? '-' : number_format($emp->rd_ot, 2) }}
+                        </td>
+                        <td class="px-3 py-2 border-r border-gray-300 text-end">
+                            {{ $emp->rd_ot_pay == 0 ? '-' : number_format($emp->rd_ot_pay, 2) }}
+                        </td>
                         <td class="px-3 py-2">Withholding Tax</td>
                         <td class="px-3 py-2 text-end">
                             {{ $emp->wth_tax == 0 ? '-' : number_format($emp->wth_tax, 2) }}
@@ -160,10 +168,16 @@
                     </tr>
                     <tr>
                         <td class="px-3 py-2">Spl Hol OT</td>
-                        <td></td>
-                        <td class="px-3 py-2 border-r border-gray-300"></td>
-                        <td class="px-3 py-2"></td>
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->spl_hol_ot == 0 ? '-' : number_format($emp->spl_hol_ot, 2) }}
+                        </td>
+                        <td class="px-3 py-2 border-r border-gray-300 text-end">
+                            {{ $emp->spl_hol_ot_pay == 0 ? '-' : number_format($emp->spl_hol_ot_pay, 2) }}
+                        </td>
+                        <td class="px-3 py-2">Withholding Tax</td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->wth_tax == 0 ? '-' : number_format($emp->wth_tax, 2) }}
+                        </td>
                         <td class="px-3 py-2 border-r border-gray-300"></td>
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2 text-center"></td>
@@ -172,9 +186,13 @@
                     <tr>
                         <td class="px-3 py-2">Leg Hol OT</td>
 
-                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 text-end">
+                            {{ $emp->leg_hol_ot == 0 ? '-' : number_format($emp->leg_hol_ot, 2) }}
+                        </td>
 
-                        <td class="px-3 py-2 border-r border-gray-300 border-gray-300"></td>
+                        <td class="px-3 py-2 border-r border-gray-300 border-gray-300 text-end">
+                            {{ $emp->leg_hol_ot_pay == 0 ? '-' : number_format($emp->leg_hol_ot_pay, 2) }}
+                        </td>
 
                         <td class="px-3 py-2 border-b border-gray-300"></td>
 

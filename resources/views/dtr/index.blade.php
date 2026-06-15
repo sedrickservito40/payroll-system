@@ -1,20 +1,28 @@
 <x-app-layout>
-    <div class="py-12" x-data="{ open: false, selected: null }" x-on:close-modal.window="open = false">
+        <div
+            class="py-2"
+            x-data="{
+                open: false,
+                selected: '{{ $search }}'
+            }"
+            x-on:close-modal.window="open = false"
+        >
 
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             {{-- Upload Button --}}
-            <div class="mb-2">
-                <button
-                    type="button"
-                    @click="open = true"
-                    class="px-4 py-2 bg-green-600 text-white rounded"
-                >
-                    Upload DTR File
-                </button>
-            </div>
-
-            <hr class="my-4">
+   
+            <button
+                type="button"
+                @click="open = true"
+                class="fixed right-6 top-1/2 -translate-y-1/2 bg-green-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-green-700"
+            >
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 16V4m0 0l-4 4m4-4l4 4" />
+                </svg>
+            </button>
 
             {{-- MAIN GRID --}}
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -26,9 +34,9 @@
                     <ul class="space-y-2">
                         @foreach($employees as $employee)
                             <li
-                                class="border p-2 rounded cursor-pointer hover:bg-gray-100"
-                                @click="selected = {{ $employee->id }}"
-                            >
+                                    class="border p-2 rounded cursor-pointer hover:bg-gray-100"
+                                    @click="window.location.href='{{ route('dtr.index') }}?search={{ $employee->employee_number }}'"
+                                >
                                 <div class="font-bold">
                                     {{ $employee->employee_number }}
                                 </div>
@@ -65,7 +73,7 @@
                     </template>
 
                     @foreach($employees as $employee)
-                        <div x-show="selected === {{ $employee->id }}" x-cloak>
+                        <div x-show="selected === '{{ $employee->employee_number }}'" x-cloak>
 
                             {{-- EMPLOYEE HEADER --}}
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -137,67 +145,68 @@
                                         </thead>
 
                                     <tbody>
-@foreach($dates as $date)
-    @php
-        $dtr = $dtrsByDate[$date] ?? null;
-        $isRestDay = \Carbon\Carbon::parse($date)->isWeekend();
-    @endphp
+                                        @foreach($dates as $date)
+                                            @php
+                                                $dtr = $dtrsByDate[$date] ?? null;
+                                                $isRestDay = \Carbon\Carbon::parse($date)->isWeekend();
+                                            @endphp
 
-    <tr>
+                                            <tr>
 
-    <input type="hidden" name="employee_number" value="{{ $employee->employee_number }}">
-        <td>{{ $date }}</td>
+                                            <input type="hidden" name="employee_number" value="{{ $employee->employee_number }}">
+                                                <td>{{ $date }}</td>
 
-        {{-- TIME IN --}}
-        <td>
-            <input type="time"
-                name="rows[{{ $dtr->id ?? 'new_'.$date }}][time_in]"
-                class="border p-1 rounded w-full"
-                value="{{ $dtr->time_in ?? '' }}">
-        </td>
+                                                {{-- TIME IN --}}
+                                                <td>
+                                                    <input type="time"
+                                                        name="rows[{{ $dtr->id ?? 'new_'.$date }}][time_in]"
+                                                        class="border p-1 rounded w-full"
+                                                        value="{{ $dtr->time_in ?? '' }}">
+                                                </td>
 
-        {{-- TIME OUT --}}
-        <td>
-            <input type="time"
-                name="rows[{{ $dtr->id ?? 'new_'.$date }}][time_out]"
-                class="border p-1 rounded w-full"
-                value="{{ $dtr->time_out ?? '' }}">
-        </td>
+                                                {{-- TIME OUT --}}
+                                                <td>
+                                                    <input type="time"
+                                                        name="rows[{{ $dtr->id ?? 'new_'.$date }}][time_out]"
+                                                        class="border p-1 rounded w-full"
+                                                        value="{{ $dtr->time_out ?? '' }}">
+                                                </td>
 
-        {{-- RAW OT --}}
-        <td>
-            {{ $dtr->raw_ot ?? '-' }}
-            <input type="hidden"
-                name="rows[{{ $dtr->id ?? 'new_'.$date }}][raw_ot]"
-                value="{{ $dtr->raw_ot ?? 0 }}">
-        </td>
+                                                {{-- RAW OT --}}
+                                                <td>
+                                                    {{ $dtr->raw_ot ?? '-' }}
+                                                    <input type="hidden"
+                                                        name="rows[{{ $dtr->id ?? 'new_'.$date }}][raw_ot]"
+                                                        value="{{ $dtr->raw_ot ?? 0 }}">
+                                                </td>
 
-        {{-- OVERTIME --}}
-        <td>
-            <input type="number"
-                step="0.01"
-                name="rows[{{ $dtr->id ?? 'new_'.$date }}][overtime]"
-                class="border p-1 rounded w-full"
-                value="{{ $dtr->overtime ?? '' }}">
-        </td>
+                                                {{-- OVERTIME --}}
+                                                <td>
+                                                    <input type="number"
+                                                        step="0.01"
+                                                        name="rows[{{ $dtr->id ?? 'new_'.$date }}][overtime]"
+                                                        class="border p-1 rounded w-full"
+                                                        value="{{ $dtr->overtime ?? '' }}">
+                                                </td>
 
-        {{-- OT TYPE --}}
-        <td class="w-48">
-            <select name="rows[{{ $dtr->id ?? 'new_'.$date }}][ot_type]"
-                class="border p-1 rounded w-full">
+                                                {{-- OT TYPE --}}
+                                                <td class="w-48">
+                                                    <select name="rows[{{ $dtr->id ?? 'new_'.$date }}][ot_type]"
+                                                        class="border p-1 rounded w-full">
 
-                <option value="">Select</option>
+                                                        <option value="">Select</option>
 
-                <option value="REG" {{ ($dtr->ot_type ?? '') == 'REG' ? 'selected' : '' }}>Regular</option>
-                <option value="RESTDAY" {{ ($dtr->ot_type ?? '') == 'RESTDAY' ? 'selected' : '' }}>Restday</option>
-                <option value="HOLIDAY" {{ ($dtr->ot_type ?? '') == 'HOLIDAY' ? 'selected' : '' }}>Holiday</option>
-                <option value="SPECIAL" {{ ($dtr->ot_type ?? '') == 'SPECIAL' ? 'selected' : '' }}>Special</option>
-            </select>
-        </td>
+                                                        <option value="REG OT" {{ ($dtr->ot_type ?? '') == 'REG OT' ? 'selected' : '' }}>Regular</option>
+                                                        <option value="RD OT" {{ ($dtr->ot_type ?? '') == 'RD OT' ? 'selected' : '' }}>Restday</option>
+                                                        <option value="SUN OT" {{ ($dtr->ot_type ?? '') == 'SUN OT' ? 'selected' : '' }}>Sun OT</option>
+                                                        <option value="LEG HOL OT" {{ ($dtr->ot_type ?? '') == 'LEG HOL OT' ? 'selected' : '' }}>Legal Holiday</option>
+                                                        <option value="SPL HOL OT" {{ ($dtr->ot_type ?? '') == 'SPL HOL OT' ? 'selected' : '' }}>Special Holiday</option>
+                                                    </select>
+                                                </td>
 
-    </tr>
-@endforeach
-</tbody>
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
                                     </table>
                                 </form>
                             @else
