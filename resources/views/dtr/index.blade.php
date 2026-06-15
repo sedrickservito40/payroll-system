@@ -127,7 +127,7 @@
                                     @csrf
                                     <div class="mt-3 text-right">
                                         <button type="submit"
-                                            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                                            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-2">
                                             Apply Changes
                                         </button>
                                     </div>
