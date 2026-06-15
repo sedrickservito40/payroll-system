@@ -10,8 +10,9 @@ use Carbon\CarbonPeriod;
 
 class DtrController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->search;
         $cutoff = session('cutoff_start');
 
         $start = null;
@@ -32,33 +33,31 @@ class DtrController extends Controller
         }
 
         $employees = Employee::whereIn('employee_status', ['REG', 'PROBY'])
-            ->with(['dtrs' => function ($query) use ($start, $end) {
-                if ($start && $end) {
-                    $query->whereBetween('date', [
-                        $start->toDateString(),
-                        $end->toDateString()
-                    ]);
-                }
-            }])
-            ->get()
-            ->map(function ($employee) {
+    ->with(['dtrs' => function ($query) use ($start, $end) {
+        if ($start && $end) {
+            $query->whereBetween('date', [
+                $start->toDateString(),
+                $end->toDateString()
+            ]);
+        }
+    }])
+    ->get()
+    ->map(function ($employee) {
+        $dtrsByDate = $employee->dtrs->keyBy(function ($dtr) {
+            return Carbon::parse($dtr->date)->toDateString();
+        });
 
-                // index DTR by date for fast lookup
-                $dtrsByDate = $employee->dtrs->keyBy(function ($dtr) {
-                    return Carbon::parse($dtr->date)->toDateString();
-                });
+        $employee->dtrsByDate = $dtrsByDate;
 
-                $employee->dtrsByDate = $dtrsByDate;
+        foreach ($employee->dtrs as $dtr) {
+            $this->computeOvertime($dtr, $employee);
+        }
 
-                // compute OT per record safely
-                foreach ($employee->dtrs as $dtr) {
-                    $this->computeOvertime($dtr, $employee);
-                }
+        return $employee;
+    });
 
-                return $employee;
-            });
-
-        return view('dtr.index', compact('employees', 'start', 'end'));
+return view('dtr.index', compact('employees', 'start', 'end', 'search'));
+        
     }
 
     private function computeOvertime($dtr, $employee)
@@ -100,49 +99,49 @@ class DtrController extends Controller
     }
 
        public function update(Request $request)
-{
-    $cutoff = session('cutoff_start');
+        {
+            $cutoff = session('cutoff_start');
 
-    foreach ($request->rows as $key => $row) {
+            foreach ($request->rows as $key => $row) {
 
-        if (is_numeric($key)) {
+                if (is_numeric($key)) {
 
-            $dtr = Dtr::find($key);
+                    $dtr = Dtr::find($key);
 
-            if (!$dtr) continue;
+                    if (!$dtr) continue;
 
-            $dtr->update([
-                'time_in'  => $row['time_in'] ?: null,
-                'time_out' => $row['time_out'] ?: null,
-                'overtime' => isset($row['overtime']) ? (float) $row['overtime'] : null,
-                'ot_type'  => $row['ot_type'] ?: null,
-                'cutoff'   => $cutoff, // 👈 ADD THIS
-            ]);
+                    $dtr->update([
+                        'time_in'  => $row['time_in'] ?: null,
+                        'time_out' => $row['time_out'] ?: null,
+                        'overtime' => isset($row['overtime']) ? (float) $row['overtime'] : null,
+                        'ot_type'  => $row['ot_type'] ?: null,
+                        'cutoff'   => $cutoff, // 👈 ADD THIS
+                    ]);
 
-        } else {
+                } else {
 
-            $date = str_replace('new_', '', $key);
+                    $date = str_replace('new_', '', $key);
 
-            if (empty($row['time_in']) && empty($row['time_out'])) {
-                continue;
+                    if (empty($row['time_in']) && empty($row['time_out'])) {
+                        continue;
+                    }
+
+                    Dtr::updateOrCreate(
+                        [
+                            'employee_number' => $request->employee_number,
+                            'date'            => $date,
+                            'cutoff'          => $cutoff, // 👈 IMPORTANT KEY
+                        ],
+                        [
+                            'time_in'  => $row['time_in'] ?: null,
+                            'time_out' => $row['time_out'] ?: null,
+                            'overtime' => isset($row['overtime']) ? (float) $row['overtime'] : null,
+                            'ot_type'  => $row['ot_type'] ?: null,
+                        ]
+                    );
+                }
             }
 
-            Dtr::updateOrCreate(
-                [
-                    'employee_number' => $request->employee_number,
-                    'date'            => $date,
-                    'cutoff'          => $cutoff, // 👈 IMPORTANT KEY
-                ],
-                [
-                    'time_in'  => $row['time_in'] ?: null,
-                    'time_out' => $row['time_out'] ?: null,
-                    'overtime' => isset($row['overtime']) ? (float) $row['overtime'] : null,
-                    'ot_type'  => $row['ot_type'] ?: null,
-                ]
-            );
+            return redirect()->back()->with('success', 'DTR updated successfully');
         }
-    }
-
-    return redirect()->back()->with('success', 'DTR updated successfully');
-}
 }
